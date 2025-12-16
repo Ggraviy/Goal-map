@@ -23,5 +23,5 @@ Goal Map - это веб-приложение для планирования и
 - **Анимации:** CSS Animations, Transitions
 
 # Автор
-👨‍💻 **Graviy**  
+👨‍💻 **ggraviy**  
 🐙 GitHub: [ggraviy](https://github.com/ggraviy)

@@ -1,35 +1,3 @@
-:root[data-theme="dark"] {
-    --paper-main: #F8F0FF;
-    --paper-light: #FFF8FF;
-    --paper-warm: #F0E8FF;
-    
-    --ink-black: #4A2D5A;
-    --ink-dark: #5A3D7A;
-    --ink-medium: #6A4D9A;
-    
-    --seal-red: #9C27B0;
-    --seal-dark: #7B1FA2;
-    
-    --success-green: #4CAF50;
-    --success-light: rgba(76, 175, 80, 0.1);
-    
-    --bg-main: radial-gradient(circle at 20% 30%, rgba(156, 39, 176, 0.05) 0%, transparent 30%),
-               radial-gradient(circle at 80% 70%, rgba(240, 232, 255, 0.1) 0%, transparent 30%),
-               linear-gradient(135deg, #F8F0FF 0%, #F0E8FF 100%);
-    --bg-card: rgba(255, 248, 255, 0.95);
-    --bg-sidebar: rgba(240, 224, 255, 0.9);
-    --bg-header: linear-gradient(135deg, rgba(232, 208, 255, 0.95) 0%, rgba(216, 176, 255, 0.9) 100%);
-    
-    --border-bold: 2px solid var(--ink-black);
-    --border-thin: 1px solid rgba(156, 39, 176, 0.2);
-    --border-accent: 2px solid var(--seal-red);
-    
-    --shadow-subtle: 0 2px 8px rgba(156, 39, 176, 0.1);
-    --shadow-medium: 0 4px 16px rgba(156, 39, 176, 0.15);
-    
-    --glow: 0 0 20px rgba(156, 39, 176, 0.2);
-}
-
 :root[data-theme="light"] {
     --paper-main: #FFFFFF;
     --paper-light: #F8F8F8;
@@ -53,6 +21,42 @@
     --border-bold: 2px solid var(--ink-black);
     --border-thin: 1px solid rgba(0, 0, 0, 0.1);
     --border-accent: 2px solid var(--seal-red);
+    
+    --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+    
+    --glow: 0 0 20px rgba(156, 39, 176, 0.2);
+}
+
+:root[data-theme="dark"] {
+    --paper-main: #0a0a0a;
+    --paper-light: #1a1a1a;
+    --paper-warm: #2a2a2a;
+    
+    --ink-black: #f0f0f0;
+    --ink-dark: #d0d0d0;
+    --ink-medium: #888888;
+    
+    --seal-red: #bb86fc;
+    --seal-dark: #9c27b0;
+    
+    --success-green: #4caf50;
+    --success-light: rgba(76, 175, 80, 0.15);
+    
+    --bg-main: #000000;
+    --bg-card: #1a1a1a;
+    --bg-sidebar: #222222;
+    --bg-header: linear-gradient(135deg, #222222 0%, #2a2a2a 100%);
+    
+    --border-bold: 2px solid var(--seal-red);
+    --border-thin: 1px solid rgba(255, 255, 255, 0.15);
+    --border-accent: 2px solid var(--seal-red);
+    
+    --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.6);
+    --shadow-deep: 0 8px 24px rgba(0, 0, 0, 0.7);
+    
+    --glow: 0 0 20px rgba(187, 134, 252, 0.2);
 }
 
 * {
@@ -63,7 +67,7 @@
 
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: var(--bg-main);
+    background: var(--bg-main);
     color: var(--ink-black);
     line-height: 1.6;
     min-height: 100vh;
@@ -361,8 +365,8 @@ body {
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 2rem;
     margin-top: 1rem;
     flex: 1;
     align-content: flex-start;
@@ -373,12 +377,15 @@ body {
 .goal-card {
     background: var(--bg-card);
     border: var(--border-thin);
-    border-radius: 10px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 2rem;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
 }
 
 .goal-card:hover {
@@ -389,7 +396,7 @@ body {
 
 .goal-card.pinned {
     border-color: var(--seal-red);
-    background: linear-gradient(135deg, rgba(156, 39, 176, 0.05), var(--bg-card));
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), var(--bg-card));
 }
 
 .goal-card.pinned::after {
@@ -440,38 +447,40 @@ body {
 }
 
 .goal-card-title {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--ink-black);
     flex: 1;
     line-height: 1.3;
+    margin-bottom: 0.5rem;
 }
 
 .goal-card-percent {
     background: var(--seal-red);
     color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 1rem;
     font-weight: 600;
     margin-left: 0.5rem;
-    min-width: 50px;
+    min-width: 60px;
     text-align: center;
 }
 
 .goal-card-desc {
     color: var(--ink-medium);
-    font-size: 0.95rem;
-    line-height: 1.4;
-    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    flex-grow: 1;
 }
 
 .goal-card-progress-section {
-    margin: 1.2rem 0;
+    margin: 1.5rem 0;
 }
 
 .goal-card-progress-info {
@@ -484,8 +493,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--ink-medium);
+    margin-bottom: 0.8rem;
 }
 
 .goal-card-tasks-count,
@@ -550,9 +560,9 @@ body {
 .goal-card-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    gap: 0.8rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
     border-top: var(--border-thin);
 }
 
@@ -561,14 +571,14 @@ body {
     border: var(--border-thin);
     color: var(--ink-medium);
     cursor: pointer;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .goal-card-btn.pin:hover {
@@ -590,10 +600,10 @@ body {
 }
 
 .goal-card-date {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--ink-medium);
-    margin-top: 1rem;
-    padding-top: 0.8rem;
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
     border-top: var(--border-thin);
     display: flex;
     align-items: center;
@@ -1213,228 +1223,298 @@ textarea {
 
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0.8rem;
+        gap: 0.8rem;
+    }
+    
+    .logo-section {
+        order: 1;
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+    
+    .logo-title {
+        font-size: 1.2rem;
+    }
+    
+    .logo-subtitle {
+        font-size: 0.75rem;
     }
     
     .header-controls {
-        order: 3;
-        width: 100%;
-        justify-content: space-between;
+        order: 2;
+        flex: none;
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .theme-toggle {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+    }
+    
+    #newGoalBtn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
     }
     
     .user-section {
-        margin-left: 0;
+        order: 3;
+        flex: 1 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.8rem;
+        border-top: var(--border-thin);
         width: 100%;
-        justify-content: center;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    
+    .user-name {
+        font-size: 0.9rem;
+        flex: 1;
+        margin: 0 0.8rem;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    #logoutBtn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        flex-shrink: 0;
     }
     
     .app-container {
-        padding: 0 1rem;
-        margin: 1rem auto;
+        margin: 0.8rem;
+        width: calc(100% - 1.6rem);
     }
     
     .workspace {
-        padding: 1.5rem;
+        padding: 1.2rem;
     }
     
-    .cards-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detail-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-    }
-    
-    .goal-actions {
-        justify-content: flex-start;
+    .workspace-tabs {
         flex-wrap: wrap;
+        gap: 0.5rem;
     }
     
-    .tasks-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-    }
-    
-    .tasks-controls {
-        width: 100%;
-    }
-    
-    .task-sort, .goal-sort {
-        width: 100%;
+    .workspace-tab {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
     }
     
     .cards-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 1rem;
     }
     
     .cards-controls {
+        flex-direction: column;
+        gap: 0.8rem;
+        width: 100%;
+    }
+    
+    .goal-sort, .task-sort {
+        width: 100%;
+    }
+    
+    .cards-grid {
+        gap: 1rem;
+    }
+    
+    .goal-card {
+        padding: 1.2rem;
+        min-height: 220px;
+    }
+    
+    .goal-card-title {
+        font-size: 1.2rem;
+    }
+    
+    .goal-card-desc {
+        font-size: 0.9rem;
+    }
+    
+    .goal-card-actions {
+        gap: 0.6rem;
+    }
+    
+    .goal-card-btn {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .detail-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .goal-header-content {
+        text-align: center;
+    }
+    
+    .current-goal-title {
+        font-size: 1.6rem;
+    }
+    
+    .goal-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .goal-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    .modal {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.3rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .modal-actions .btn {
         width: 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .modal-actions {
-        flex-direction: column;
+    .logo-section {
+        min-width: 130px;
     }
     
-    .btn {
-        width: 100%;
-        justify-content: center;
+    .logo-title {
+        font-size: 1.1rem;
     }
     
-    .workspace-tabs {
-        flex-direction: column;
-        gap: 0.5rem;
+    #newGoalBtn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
     }
     
-    .goal-card-actions {
-        justify-content: center;
+    #newGoalBtn .btn-text {
+        display: none;
+    }
+    
+    #newGoalBtn .btn-icon {
+        margin-right: 0;
+        font-size: 1.1rem;
+    }
+    
+    .workspace-tab {
+        min-width: 100px;
+        padding: 0.5rem 0.8rem;
+    }
+    
+    .goal-card {
+        padding: 1rem;
+        min-height: 200px;
+    }
+    
+    .goal-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .goal-card-percent {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.9rem;
+        min-width: 45px;
+    }
+    
+    .goal-card-btn {
+        width: 36px;
+        height: 36px;
     }
     
     .stats-grid {
         grid-template-columns: 1fr;
     }
+    
+    .chart-bar-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .chart-bar-label {
+        min-width: 100%;
+        font-size: 0.9rem;
+    }
+    
+    .chart-bar-value {
+        text-align: left;
+        min-width: auto;
+    }
 }
 
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 2rem;
-  margin-top: 1rem;
-  flex: 1;
-  align-content: flex-start;
-  overflow-y: visible;
-  width: 100%;
-}
-
-.goal-card {
-  background: var(--bg-card);
-  border: var(--border-thin);
-  border-radius: 12px;
-  padding: 2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  min-height: 280px;
-  display: flex;
-  flex-direction: column;
-}
-
-.goal-card-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--ink-black);
-  flex: 1;
-  line-height: 1.3;
-  margin-bottom: 0.5rem;
-}
-
-.goal-card-desc {
-  color: var(--ink-medium);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex-grow: 1;
-}
-
-.goal-card-percent {
-  background: var(--seal-red);
-  color: white;
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-  min-width: 60px;
-  text-align: center;
-}
-
-.goal-card-progress-section {
-  margin: 1.5rem 0;
-}
-
-.goal-card-progress-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1rem;
-  color: var(--ink-medium);
-  margin-bottom: 0.8rem;
-}
-
-.goal-card-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-  border-top: var(--border-thin);
-}
-
-.goal-card-btn {
-  background: transparent;
-  border: var(--border-thin);
-  color: var(--ink-medium);
-  cursor: pointer;
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 1.1rem;
-}
-
-.goal-card-date {
-  font-size: 0.9rem;
-  color: var(--ink-medium);
-  margin-top: 1.5rem;
-  padding-top: 1.2rem;
-  border-top: var(--border-thin);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+@media (min-width: 481px) and (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (min-width: 1200px) {
-  .cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+    .cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (min-width: 1400px) {
-  .cards-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+    .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 @media (min-width: 1600px) {
-  .cards-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .goal-card {
-    padding: 1.5rem;
-    min-height: 250px;
-  }
+    .cards-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
 }

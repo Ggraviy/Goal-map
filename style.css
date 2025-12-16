@@ -532,8 +532,11 @@ body {
     background: linear-gradient(90deg, var(--seal-red), #E040FB);
     border-radius: 3px;
     position: relative;
+    width: 0%;
+    transition: width 0.3s ease;
 }
 
+/* Анимация shimmer для карточек */
 .goal-card-progress-fill[style*="width: 0%"]::after {
     display: none;
 }
@@ -547,7 +550,7 @@ body {
     bottom: 0;
     background: linear-gradient(90deg, 
         transparent, 
-        rgba(255, 255, 255, 0.3), 
+        rgba(255, 255, 255, 0.4), 
         transparent);
     animation: progressShimmer 2s infinite;
 }
@@ -690,6 +693,7 @@ body {
     border-radius: 5px;
     overflow: hidden;
     margin-bottom: 0.8rem;
+    position: relative;
 }
 
 .progress-bar {
@@ -697,6 +701,27 @@ body {
     background: linear-gradient(90deg, var(--seal-red), #E040FB);
     border-radius: 5px;
     width: 0;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+/* Анимация shimmer для главного прогресс-бара */
+.progress-bar[style*="width: 0%"]::after {
+    display: none;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    animation: progressShimmer 2s infinite;
 }
 
 .progress-stats {
@@ -953,6 +978,7 @@ body {
     background: var(--bg-sidebar);
     border-radius: 6px;
     overflow: hidden;
+    position: relative;
 }
 
 .chart-bar-fill {
@@ -960,6 +986,22 @@ body {
     background: linear-gradient(90deg, var(--seal-red), #E040FB);
     border-radius: 6px;
     width: 0%;
+    transition: width 0.5s ease-out;
+    position: relative;
+}
+
+.chart-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    animation: progressShimmer 2s infinite;
 }
 
 .chart-bar-value {

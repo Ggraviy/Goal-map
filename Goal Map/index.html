@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Map | Планировщик целей</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeZVgbPm_1jmXN4xdU94Sr_9xA--WPt18",
+            authDomain: "goalmap-dc6e1.firebaseapp.com",
+            projectId: "goalmap-dc6e1",
+            storageBucket: "goalmap-dc6e1.appspot.com",
+            messagingSenderId: "597545355070",
+            appId: "1:597545355070:web:d88fc5bcef7a8533110e6f"
+        };
+    </script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">🗺️</div>
+                <div>
+                    <h1 class="logo-title">Goal Map</h1>
+                    <p class="logo-subtitle">Планируй. Достигай. Делись.</p>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" title="Сменить тему">
+                    <svg class="theme-icon" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+                    </svg>
+                </button>
+                <button class="btn primary-btn" id="newGoalBtn">
+                    <span class="btn-icon">+</span>
+                    Новая цель
+                </button>
+            </div>
+            
+            <div class="user-section" id="userSection">
+                <div class="user-avatar">
+                    <span id="userInitial">?</span>
+                </div>
+                <span class="user-name" id="userName"></span>
+                <button class="btn ghost-btn" id="logoutBtn">Выйти</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <main class="workspace">
+            <div class="workspace-tabs">
+                <button class="workspace-tab active" data-view="cards">Все цели</button>
+                <button class="workspace-tab" data-view="stats">Статистика</button>
+            </div>
+
+            <div class="view-container">
+                <div class="view-content active" id="cardsView">
+                    <div class="cards-header">
+                        <h2 class="cards-title">Мои цели</h2>
+                        <div class="cards-controls">
+                            <div class="cards-stats">
+                                <span id="totalGoalsCount">0</span> целей, 
+                                <span id="completedGoalsCount">0</span> завершено
+                            </div>
+                            <select id="goalSort" class="goal-sort">
+                                <option value="newest">Сначала новые</option>
+                                <option value="oldest">Сначала старые</option>
+                                <option value="progress">По прогрессу (↑)</option>
+                                <option value="progress_desc">По прогрессу (↓)</option>
+                                <option value="pinned">Закрепленные сначала</option>
+                                <option value="title">По названию (А-Я)</option>
+                                <option value="title_desc">По названию (Я-А)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="cards-grid" id="cardsGrid">
+                        <div class="empty-cards">
+                            <div class="empty-icon">🎯</div>
+                            <h3 class="empty-title">Целей пока нет</h3>
+                            <p class="empty-text">Создайте первую цель</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-content" id="detailView">
+                    <div class="detail-header">
+                        <button class="btn back-btn" id="backToCards">
+                            ← Назад к целям
+                        </button>
+                        <div class="goal-header-content">
+                            <h2 class="current-goal-title" id="currentGoalTitle">Выберите цель</h2>
+                            <p class="goal-description" id="goalDescription"></p>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="btn secondary-btn" id="editGoalBtn" style="display: none;">✏️ Редактировать</button>
+                            <button class="btn secondary-btn" id="addTaskBtn">
+                                <span class="btn-icon">+</span>
+                                Добавить задачу
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="progress-card">
+                        <div class="progress-info">
+                            <span>Общий прогресс</span>
+                            <span class="progress-percent" id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span id="completedTasks">0</span> из <span id="totalTasks">0</span> задач выполнено
+                        </div>
+                    </div>
+
+                    <div class="tasks-section">
+                        <div class="tasks-header">
+                            <h3 class="section-title">Задачи</h3>
+                            <div class="tasks-controls">
+                                <select id="taskSort" class="task-sort">
+                                    <option value="default">По умолчанию</option>
+                                    <option value="completed">Сначала выполненные</option>
+                                    <option value="active">Сначала активные</option>
+                                    <option value="title">По названию (А-Я)</option>
+                                    <option value="title_desc">По названию (Я-А)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="tasks-container" id="tasksContainer">
+                            <div class="empty-workspace">
+                                <div class="empty-icon">📋</div>
+                                <h3 class="empty-title">Задач пока нет</h3>
+                                <p class="empty-text">Добавьте задачи к выбранной цели</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-content" id="statsView">
+                    <div class="stats-header">
+                        <h2 class="stats-title">Моя статистика</h2>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-value" id="totalGoalsStat">0</div>
+                            <div class="stat-label">Всего целей</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value" id="completedGoalsStat">0</div>
+                            <div class="stat-label">Завершено</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">📋</div>
+                            <div class="stat-value" id="totalTasksStat">0</div>
+                            <div class="stat-label">Всего задач</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-value" id="productivityStat">0%</div>
+                            <div class="stat-label">Продуктивность</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-chart">
+                        <h3 class="chart-title">Прогресс по целям</h3>
+                        <div class="chart-container" id="progressChart">
+                            <p class="empty-text">Нет данных для отображения</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <p>Goal Map • 2025</p>
+        <p class="footer-note">Данные хранятся в Firebase</p>
+    </footer>
+
+    <div class="modal-overlay" id="authModal">
+        <div class="modal auth-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Добро пожаловать!</h3>
+                <button class="close-modal" id="closeAuth">&times;</button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Вход</button>
+                <button class="auth-tab" data-tab="register">Регистрация</button>
+            </div>
+            
+            <form class="auth-form active" id="loginForm">
+                <div class="input-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="example@mail.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="Ваш пароль" required>
+                </div>
+                <button type="submit" class="btn primary-btn full-width">Войти в аккаунт</button>
+            </form>
+            
+            <form class="auth-form" id="registerForm">
+                <div class="input-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="example@mail.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="registerPassword">Пароль</label>
+                    <input type="password" id="registerPassword" placeholder="Минимум 6 символов" minlength="6" required>
+                </div>
+                <div class="input-group">
+                    <label for="registerName">Имя пользователя</label>
+                    <input type="text" id="registerName" placeholder="Как вас зовут?" required>
+                </div>
+                <button type="submit" class="btn primary-btn full-width">Создать аккаунт</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="goalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="goalModalTitle">🎯 Новая цель</h3>
+                <button class="close-modal" id="closeGoal">&times;</button>
+            </div>
+            <form id="goalForm">
+                <div class="input-group">
+                    <label for="goalTitle">Название цели*</label>
+                    <input type="text" id="goalTitle" placeholder="Например: Изучить JavaScript" required>
+                </div>
+                <div class="input-group">
+                    <label for="goalDesc">Описание (необязательно)</label>
+                    <textarea id="goalDesc" placeholder="Подробнее о вашей цели..." rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn secondary-btn" id="cancelGoal">Отмена</button>
+                    <button type="submit" class="btn primary-btn" id="goalSubmitBtn">Создать цель</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">📋 Новая задача</h3>
+                <button class="close-modal" id="closeTask">&times;</button>
+            </div>
+            <form id="taskForm">
+                <div class="input-group">
+                    <label for="taskTitle">Название задачи*</label>
+                    <input type="text" id="taskTitle" placeholder="Что нужно сделать?" required>
+                </div>
+                <div class="input-group">
+                    <label for="taskDesc">Описание</label>
+                    <textarea id="taskDesc" placeholder="Детали задачи..." rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="taskParent">Родительская задача</label>
+                    <select id="taskParent">
+                        <option value="">Основная задача</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn secondary-btn" id="cancelTask">Отмена</button>
+                    <button type="submit" class="btn primary-btn" id="taskSubmitBtn">Добавить задачу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Подтверждение удаления</h3>
+                <button class="close-modal" id="closeDeleteConfirm">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-confirm-content" id="deleteConfirmMessage"></div>
+                <div class="modal-actions">
+                    <button class="btn secondary-btn" id="cancelDeleteBtn">Отмена</button>
+                    <button class="btn danger-btn" id="confirmDeleteBtn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification-container" id="notifications"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

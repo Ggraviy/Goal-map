@@ -1236,3 +1236,15 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// Добавляем touch-friendly поведение
+document.addEventListener('touchstart', function() {}, {passive: true});
+
+// Улучшаем клики на мобильных
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.goal-card-btn, .task-action-btn, .workspace-tab')) {
+        e.preventDefault();
+        e.target.classList.add('active');
+        setTimeout(() => e.target.classList.remove('active'), 200);
+    }
+}, true);

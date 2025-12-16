@@ -1,6 +1,6 @@
 # Goal Map 🗺️
 
-**Live Demo:** [https://ggraviy.github.io/goal-map/](https://ggraviy.github.io/goal-map/)
+**Live Demo:** [https://ggraviy.github.io/goal-map/](https://ggraviy.github.io/Goal-map/)
 
 # Описание
 

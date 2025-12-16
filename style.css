@@ -1,3 +1,13 @@
+/* 
+Goal Map - Планировщик целей
+Автор: Graviy (ggraviy)
+Школьный проект 2025
+GitHub: https://github.com/ggraviy/goal-map
+
+Стили приложения в стиле японского минимализма
+Светлая и тёмная темы, адаптивный дизайн
+*/
+
 :root[data-theme="light"] {
     --paper-main: #FFFFFF;
     --paper-light: #F8F8F8;
@@ -1560,3 +1570,4 @@ textarea {
         grid-template-columns: repeat(5, 1fr);
     }
 }
+

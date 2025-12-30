@@ -800,10 +800,6 @@ body {
     transition: opacity 0.2s;
 }
 
-.task-item:hover .task-actions {
-    opacity: 1;
-}
-
 .task-action-btn {
     background: transparent;
     border: var(--border-thin);
@@ -823,6 +819,32 @@ body {
     border-color: var(--seal-red);
     color: var(--seal-red);
     background: rgba(156, 39, 176, 0.05);
+}
+
+.task-description {
+    color: var(--ink-medium);
+    margin-left: 2.2rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.subtasks {
+    margin-left: 2rem;
+    margin-top: 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .subtasks {
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.task-warning {
+    color: var(--seal-red);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    padding-left: 2.2rem;
+    animation: fadeIn 0.3s;
 }
 
 .task-description {
@@ -1508,3 +1530,4 @@ textarea {
         grid-template-columns: repeat(5, 1fr);
     }
 }
+

@@ -681,40 +681,67 @@ function updateCurrentGoalUI() {
   }
 }
 
+function setupTaskHover() {
+    const taskItems = document.querySelectorAll('.task-item');
+    
+    taskItems.forEach(task => {
+        task.addEventListener('mouseenter', function(e) {
+            e.stopPropagation();
+            
+            document.querySelectorAll('.task-actions').forEach(actions => {
+                actions.style.opacity = '0';
+            });
+            
+            const currentActions = this.querySelector('.task-actions');
+            if (currentActions) {
+                currentActions.style.opacity = '1';
+            }
+        });
+    });
+    
+    tasksContainer.addEventListener('mouseleave', function() {
+        document.querySelectorAll('.task-actions').forEach(actions => {
+            actions.style.opacity = '0';
+        });
+    });
+}
+
 function renderTasks(tasks) {
-  const container = GoalApp.elems.tasksContainer;
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  if (!tasks || tasks.length === 0) {
-    container.innerHTML = `
-      <div class="empty-workspace">
-        <div class="empty-icon">📋</div>
-        <h3 class="empty-title">Задач пока нет</h3>
-        <p class="empty-text">Добавьте задачи к выбранной цели</p>
-      </div>
-    `;
-    return;
-  }
-  
-  if (GoalApp.elems.taskSort) {
-    const sortBy = GoalApp.elems.taskSort.value;
-    if (sortBy !== 'default') {
-      tasks = sortTasksByType([...tasks], sortBy);
+    const container = GoalApp.elems.tasksContainer;
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!tasks || tasks.length === 0) {
+        container.innerHTML = `
+            <div class="empty-workspace">
+                <div class="empty-icon">📋</div>
+                <h3 class="empty-title">Задач пока нет</h3>
+                <p class="empty-text">Добавьте задачи к выбранной цели</p>
+            </div>
+        `;
+        return;
     }
-  }
-  
-  const fragment = document.createDocumentFragment();
-  
-  tasks.forEach(task => {
-    const taskElement = createTaskElement(task, 0);
-    if (taskElement) {
-      fragment.appendChild(taskElement);
+    
+    if (GoalApp.elems.taskSort) {
+        const sortBy = GoalApp.elems.taskSort.value;
+        if (sortBy !== 'default') {
+            tasks = sortTasksByType([...tasks], sortBy);
+        }
     }
-  });
-  
-  container.appendChild(fragment);
+    
+    const fragment = document.createDocumentFragment();
+    
+    tasks.forEach(task => {
+        const taskElement = createTaskElement(task, 0);
+        if (taskElement) {
+            fragment.appendChild(taskElement);
+        }
+    });
+    
+    container.appendChild(fragment);
+    
+    setupTaskHover();
 }
 
 function sortTasksByType(tasks, sortBy) {
@@ -1239,10 +1266,8 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Добавляем touch-friendly поведение
 document.addEventListener('touchstart', function() {}, {passive: true});
 
-// Улучшаем клики на мобильных
 document.addEventListener('click', function(e) {
     if (e.target.matches('.goal-card-btn, .task-action-btn, .workspace-tab')) {
         e.preventDefault();

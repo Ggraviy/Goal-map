@@ -1,13 +1,3 @@
-/* 
-Goal Map - Планировщик целей
-Автор: Graviy (ggraviy)
-Школьный проект 2025
-GitHub: https://github.com/ggraviy/goal-map
-
-Стили приложения в стиле японского минимализма
-Светлая и тёмная темы, адаптивный дизайн
-*/
-
 :root[data-theme="light"] {
     --paper-main: #FFFFFF;
     --paper-light: #F8F8F8;
@@ -29,7 +19,7 @@ GitHub: https://github.com/ggraviy/goal-map
     --bg-header: linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);
     
     --border-bold: 2px solid var(--ink-black);
-    --border-thin: 1px solid rgba(0, 0, 0, 0.1);
+    --border-thin: 1px solid rgba(0, 0, 0, 0.15);
     --border-accent: 2px solid var(--seal-red);
     
     --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -93,7 +83,7 @@ body {
 }
 
 .header-content {
-    max-width: 100%;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 1rem 2rem;
     display: flex;
@@ -245,13 +235,14 @@ body {
 }
 
 .app-container {
-    margin: 1.5rem 2rem;
-    padding: 0;
+    max-width: 1800px;
+    margin: 1.5rem auto;
+    padding: 0 2rem;
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 180px);
-    width: calc(100% - 4rem);
+    width: 100%;
 }
 
 .workspace {
@@ -546,30 +537,6 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Анимация shimmer для карточек */
-.goal-card-progress-fill[style*="width: 0%"]::after {
-    display: none;
-}
-
-.goal-card-progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.4), 
-        transparent);
-    animation: progressShimmer 2s infinite;
-}
-
-@keyframes progressShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
 .goal-card-actions {
     display: flex;
     justify-content: flex-end;
@@ -715,25 +682,6 @@ body {
     position: relative;
 }
 
-/* Анимация shimmer для главного прогресс-бара */
-.progress-bar[style*="width: 0%"]::after {
-    display: none;
-}
-
-.progress-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.4), 
-        transparent);
-    animation: progressShimmer 2s infinite;
-}
-
 .progress-stats {
     color: var(--ink-medium);
     font-size: 0.95rem;
@@ -801,10 +749,15 @@ body {
     padding: 1.2rem;
     margin-bottom: 1rem;
     transition: all 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .task-item {
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .task-item:hover {
-    transform: translateX(4px);
+    transform: translateX(2px);
     border-left-color: var(--seal-red);
 }
 
@@ -884,6 +837,10 @@ body {
     margin-top: 1rem;
     padding-left: 1rem;
     border-left: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .subtasks {
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .task-warning {
@@ -998,20 +955,6 @@ body {
     width: 0%;
     transition: width 0.5s ease-out;
     position: relative;
-}
-
-.chart-bar-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.4), 
-        transparent);
-    animation: progressShimmer 2s infinite;
 }
 
 .chart-bar-value {
@@ -1487,11 +1430,6 @@ textarea {
         font-size: 1.1rem;
     }
     
-    #newGoalBtn {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    
     #newGoalBtn .btn-text {
         display: none;
     }
@@ -1570,4 +1508,3 @@ textarea {
         grid-template-columns: repeat(5, 1fr);
     }
 }
-

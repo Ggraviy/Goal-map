@@ -1,13 +1,3 @@
-/*
-Goal Map - Планировщик целей
-Автор: Graviy (ggraviy)
-Школьный проект 2025
-GitHub: https://github.com/ggraviy/goal-map
-
-Логика приложения для управления целями и задачами
-Интеграция с Firebase для хранения данных
-*/
-
 const GoalApp = {
   user: null,
   goals: [],
@@ -1018,11 +1008,13 @@ async function toggleTaskComplete(taskId, completed) {
         
         const warning = document.createElement('div');
         warning.className = 'task-warning';
-        warning.textContent = '⚠️ Сначала завершите подзадачи';
+        warning.textContent = '⚠️ Сначала завершите все подзадачи';
         
-        const target = taskElement.querySelector('.task-description') || taskElement.querySelector('.task-header');
-        if (target) {
-          target.after(warning);
+        const taskHeader = taskElement.querySelector('.task-header');
+        if (taskHeader) {
+          taskHeader.parentNode.insertBefore(warning, taskHeader.nextSibling);
+        } else {
+          taskElement.insertBefore(warning, taskElement.firstChild);
         }
         
         setTimeout(() => {
@@ -1258,4 +1250,3 @@ document.addEventListener('click', function(e) {
         setTimeout(() => e.target.classList.remove('active'), 200);
     }
 }, true);
-

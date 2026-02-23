@@ -117,7 +117,8 @@ function setupEvents() {
       }
     });
   });
-  
+
+  document.getElementById('guestLoginBtn')?.addEventListener('click', handleGuestLogin);
   document.getElementById('closeAuth')?.addEventListener('click', () => closeModal('authModal'));
   document.getElementById('closeGoal')?.addEventListener('click', () => closeModal('goalModal'));
   document.getElementById('closeTask')?.addEventListener('click', () => closeModal('taskModal'));
@@ -167,6 +168,77 @@ function resetUI() {
   updateStats();
 }
 
+async function handleGuestLogin() {
+    try {
+        const guestUser = {
+            uid: 'guest_' + Date.now(),
+            isAnonymous: true,
+            displayName: 'Гость'
+        };
+        
+        GoalApp.user = guestUser;
+        
+        // Загружаем сохранённые данные гостя
+        GoalApp.goals = loadGoalsLocally(); // если нет данных - вернёт []
+        
+        updateUserUI(guestUser);
+        renderCards();
+        updateStats();
+        
+        closeModal('authModal');
+        
+        // Показываем сообщение в зависимости от наличия данных
+        if (GoalApp.goals.length > 0) {
+            showMessage('С возвращением! Ваши данные восстановлены', 'success');
+        } else {
+            showMessage('Вы вошли как гость', 'success');
+        }
+        
+        localStorage.setItem('goalmap-guest', 'true');
+        
+    } catch (err) {
+        showMessage('Ошибка входа: ' + err.message, 'error');
+    }
+}
+
+// Функции для работы с localStorage
+function saveGoalsLocally(goals) {
+    localStorage.setItem('goalmap-guest-goals', JSON.stringify(goals));
+}
+
+function loadGoalsLocally() {
+    const saved = localStorage.getItem('goalmap-guest-goals');
+    return saved ? JSON.parse(saved) : [];
+}
+
+function checkAuth() {
+    GoalApp.auth.onAuthStateChanged(function(user) {
+        GoalApp.user = user;
+        
+        if (user) {
+            updateUserUI(user);
+            loadGoals();
+        } else {
+            const wasGuest = localStorage.getItem('goalmap-guest');
+            if (wasGuest) {
+                const guestUser = {
+                    uid: 'guest_' + Date.now(),
+                    isAnonymous: true,
+                    displayName: 'Гость'
+                };
+                GoalApp.user = guestUser;
+                GoalApp.goals = loadGoalsLocally();
+                updateUserUI(guestUser);
+                renderCards();
+                updateStats();
+            } else {
+                resetUI();
+                openModal('authModal');
+            }
+        }
+    });
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value;
@@ -199,12 +271,24 @@ async function handleRegister(e) {
 }
 
 async function logoutUser() {
-  try {
-    await GoalApp.auth.signOut();
-    showMessage('Вы вышли из системы');
-  } catch (err) {
-    showMessage('Ошибка выхода', 'error');
-  }
+    try {
+        if (GoalApp.user?.isAnonymous) {
+            localStorage.removeItem('goalmap-guest');
+            
+            GoalApp.user = null;
+            GoalApp.currentGoal = null;
+            
+            resetUI();
+            openModal('authModal');
+            showMessage('Вы вышли из гостевого режима. Данные сохранены');
+        } else {
+            // Обычный выход из Firebase
+            await GoalApp.auth.signOut();
+            showMessage('Вы вышли из системы');
+        }
+    } catch (err) {
+        showMessage('Ошибка выхода', 'error');
+    }
 }
 
 function switchAuthTab(tabId) {
@@ -480,59 +564,63 @@ function showDeleteConfirm(type, id, title) {
 }
 
 async function deleteItemConfirmed() {
-  if (!GoalApp.pendingDelete) return;
-  
-  const { type, id, title } = GoalApp.pendingDelete;
-  
-  try {
-    if (type === 'goal') {
-      await GoalApp.db.collection('goals').doc(id).delete();
-      
-      GoalApp.goals = GoalApp.goals.filter(g => g.id !== id);
-      
-      if (GoalApp.currentGoal?.id === id) {
-        switchToCardsView();
-      }
-      
-      renderCards();
-      showMessage(`Цель "${title}" удалена`, 'info');
-      
-    } else if (type === 'task') {
-      if (!GoalApp.currentGoal) return;
-      
-      function removeTaskById(tasks, taskId) {
-        return tasks.filter(task => {
-          if (task.id === taskId) return false;
-          if (task.subtasks) {
-            task.subtasks = removeTaskById(task.subtasks, taskId);
-          }
-          return true;
-        });
-      }
-      
-      const updatedTasks = removeTaskById(GoalApp.currentGoal.tasks, id);
-      GoalApp.currentGoal.tasks = updatedTasks;
-      
-      await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
-        tasks: updatedTasks,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      renderTasks(updatedTasks);
-      updateProgress();
-      sortGoalsByType();
-      renderCards();
-      showMessage(`Задача "${title}" удалена`, 'info');
+    if (!GoalApp.pendingDelete) return;
+    
+    const { type, id, title } = GoalApp.pendingDelete;
+    
+    try {
+        if (type === 'goal') {
+            await GoalApp.db.collection('goals').doc(id).delete();
+            
+            GoalApp.goals = GoalApp.goals.filter(g => g.id !== id);
+            
+            if (GoalApp.currentGoal?.id === id) {
+                switchToCardsView();
+            }
+            
+            renderCards();
+            showMessage(`Цель "${title}" удалена`, 'info');
+            
+        } else if (type === 'task') {
+            if (!GoalApp.currentGoal) return;
+            
+            function removeTaskById(tasks, taskId) {
+                return tasks.filter(task => {
+                    if (task.id === taskId) return false;
+                    if (task.subtasks) {
+                        task.subtasks = removeTaskById(task.subtasks, taskId);
+                    }
+                    return true;
+                });
+            }
+            
+            const updatedTasks = removeTaskById(GoalApp.currentGoal.tasks, id);
+            GoalApp.currentGoal.tasks = updatedTasks;
+            
+            await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
+                tasks: updatedTasks,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            renderTasks(updatedTasks);
+            updateProgress();
+            sortGoalsByType();
+            renderCards();
+            showMessage(`Задача "${title}" удалена`, 'info');
+        }
+        
+        closeModal('deleteConfirmModal');
+        GoalApp.pendingDelete = null;
+        updateStats();
+        
+        if (GoalApp.user?.isAnonymous) {
+            saveGoalsLocally(GoalApp.goals);
+        }
+        
+    } catch (err) {
+        showMessage('Ошибка удаления: ' + err.message, 'error');
+        GoalApp.pendingDelete = null;
     }
-    
-    closeModal('deleteConfirmModal');
-    GoalApp.pendingDelete = null;
-    updateStats();
-    
-  } catch (err) {
-    showMessage('Ошибка удаления: ' + err.message, 'error');
-    GoalApp.pendingDelete = null;
-  }
 }
 
 function updateCardsStats(completedCount = 0) {
@@ -567,75 +655,79 @@ function openGoalModal(goalId = null) {
 }
 
 async function handleGoalForm(e) {
-  e.preventDefault();
-  
-  const title = document.getElementById('goalTitle').value.trim();
-  const description = document.getElementById('goalDesc').value.trim();
-  
-  if (!title) {
-    showMessage('Введите название цели', 'error');
-    return;
-  }
-  
-  try {
-    const goalData = {
-      title: title,
-      description: description,
-      pinned: false,
-      ownerId: GoalApp.user.uid,
-      ownerName: GoalApp.user.displayName || GoalApp.user.email,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    e.preventDefault();
     
-    if (GoalApp.editingGoalId) {
-      const existingGoal = GoalApp.goals.find(g => g.id === GoalApp.editingGoalId);
-      if (existingGoal) {
-        goalData.tasks = existingGoal.tasks || [];
-        goalData.pinned = existingGoal.pinned || false;
-      }
-      
-      await GoalApp.db.collection('goals').doc(GoalApp.editingGoalId).update(goalData);
-      
-      const index = GoalApp.goals.findIndex(g => g.id === GoalApp.editingGoalId);
-      if (index !== -1) {
-        GoalApp.goals[index] = {
-          ...GoalApp.goals[index],
-          ...goalData,
-          id: GoalApp.editingGoalId
-        };
-      }
-      
-      if (GoalApp.currentGoal?.id === GoalApp.editingGoalId) {
-        GoalApp.currentGoal = GoalApp.goals[index];
-        updateCurrentGoalUI();
-      }
-      
-      showMessage('Цель обновлена', 'success');
-    } else {
-      goalData.tasks = [];
-      goalData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      
-      const docRef = await GoalApp.db.collection('goals').add(goalData);
-      
-      const newGoal = {
-        id: docRef.id,
-        ...goalData,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-      
-      GoalApp.goals.unshift(newGoal);
-      showMessage('Цель создана', 'success');
+    const title = document.getElementById('goalTitle').value.trim();
+    const description = document.getElementById('goalDesc').value.trim();
+    
+    if (!title) {
+        showMessage('Введите название цели', 'error');
+        return;
     }
     
-    closeModal('goalModal');
-    sortGoalsByType();
-    renderCards();
-    updateStats();
-    
-  } catch (err) {
-    showMessage('Ошибка: ' + err.message, 'error');
-  }
+    try {
+        const goalData = {
+            title: title,
+            description: description,
+            pinned: false,
+            ownerId: GoalApp.user.uid,
+            ownerName: GoalApp.user.displayName || GoalApp.user.email,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        if (GoalApp.editingGoalId) {
+            const existingGoal = GoalApp.goals.find(g => g.id === GoalApp.editingGoalId);
+            if (existingGoal) {
+                goalData.tasks = existingGoal.tasks || [];
+                goalData.pinned = existingGoal.pinned || false;
+            }
+            
+            await GoalApp.db.collection('goals').doc(GoalApp.editingGoalId).update(goalData);
+            
+            const index = GoalApp.goals.findIndex(g => g.id === GoalApp.editingGoalId);
+            if (index !== -1) {
+                GoalApp.goals[index] = {
+                    ...GoalApp.goals[index],
+                    ...goalData,
+                    id: GoalApp.editingGoalId
+                };
+            }
+            
+            if (GoalApp.currentGoal?.id === GoalApp.editingGoalId) {
+                GoalApp.currentGoal = GoalApp.goals[index];
+                updateCurrentGoalUI();
+            }
+            
+            showMessage('Цель обновлена', 'success');
+        } else {
+            goalData.tasks = [];
+            goalData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            
+            const docRef = await GoalApp.db.collection('goals').add(goalData);
+            
+            const newGoal = {
+                id: docRef.id,
+                ...goalData,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            GoalApp.goals.unshift(newGoal);
+            showMessage('Цель создана', 'success');
+        }
+        
+        closeModal('goalModal');
+        sortGoalsByType();
+        renderCards();
+        updateStats();
+        
+        if (GoalApp.user?.isAnonymous) {
+            saveGoalsLocally(GoalApp.goals);
+        }
+        
+    } catch (err) {
+        showMessage('Ошибка: ' + err.message, 'error');
+    }
 }
 
 function selectGoal(goalId) {
@@ -905,69 +997,74 @@ function fillParentSelect(excludeTaskId = null) {
 }
 
 async function handleTaskForm(e) {
-  e.preventDefault();
-  
-  const title = document.getElementById('taskTitle').value.trim();
-  const description = document.getElementById('taskDesc').value.trim();
-  const parentId = document.getElementById('taskParent').value;
-  
-  if (!title) {
-    showMessage('Введите название задачи', 'error');
-    return;
-  }
-  
-  try {
-    const taskData = {
-      id: GoalApp.editingTaskId || 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-      title: title,
-      description: description,
-      completed: false,
-      subtasks: []
-    };
+    e.preventDefault();
     
-    if (GoalApp.editingTaskId) {
-      const existingTask = findTaskById(GoalApp.currentGoal.tasks, GoalApp.editingTaskId);
-      if (existingTask) {
-        taskData.completed = existingTask.completed;
-        taskData.subtasks = existingTask.subtasks || [];
-      }
+    const title = document.getElementById('taskTitle').value.trim();
+    const description = document.getElementById('taskDesc').value.trim();
+    const parentId = document.getElementById('taskParent').value;
+    
+    if (!title) {
+        showMessage('Введите название задачи', 'error');
+        return;
     }
     
-    let updatedTasks;
-    if (GoalApp.editingTaskId) {
-      updatedTasks = updateTaskInArray([...GoalApp.currentGoal.tasks], GoalApp.editingTaskId, taskData);
-    } else if (parentId) {
-      updatedTasks = addTaskAsSubtask([...GoalApp.currentGoal.tasks], parentId, taskData);
-    } else {
-      updatedTasks = [...(GoalApp.currentGoal.tasks || []), taskData];
+    try {
+        const taskData = {
+            id: GoalApp.editingTaskId || 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            title: title,
+            description: description,
+            completed: false,
+            subtasks: []
+        };
+        
+        if (GoalApp.editingTaskId) {
+            const existingTask = findTaskById(GoalApp.currentGoal.tasks, GoalApp.editingTaskId);
+            if (existingTask) {
+                taskData.completed = existingTask.completed;
+                taskData.subtasks = existingTask.subtasks || [];
+            }
+        }
+        
+        let updatedTasks;
+        if (GoalApp.editingTaskId) {
+            updatedTasks = updateTaskInArray([...GoalApp.currentGoal.tasks], GoalApp.editingTaskId, taskData);
+        } else if (parentId) {
+            updatedTasks = addTaskAsSubtask([...GoalApp.currentGoal.tasks], parentId, taskData);
+        } else {
+            updatedTasks = [...(GoalApp.currentGoal.tasks || []), taskData];
+        }
+        
+        GoalApp.currentGoal.tasks = updatedTasks;
+        
+        await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
+            tasks: updatedTasks,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        const goalIndex = GoalApp.goals.findIndex(g => g.id === GoalApp.currentGoal.id);
+        if (goalIndex !== -1) {
+            GoalApp.goals[goalIndex].tasks = updatedTasks;
+        }
+        
+        renderTasks(updatedTasks);
+        updateProgress();
+        sortGoalsByType();
+        renderCards();
+        closeModal('taskModal');
+        
+        showMessage(GoalApp.editingTaskId ? 'Задача обновлена' : 'Задача создана', 'success');
+        GoalApp.editingTaskId = null;
+        updateStats();
+        
+        // Сохраняем в localStorage для гостя
+        if (GoalApp.user?.isAnonymous) {
+            saveGoalsLocally(GoalApp.goals);
+        }
+        
+    } catch (err) {
+        showMessage('Ошибка: ' + err.message, 'error');
     }
-    
-    GoalApp.currentGoal.tasks = updatedTasks;
-    
-    await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
-      tasks: updatedTasks,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    
-    const goalIndex = GoalApp.goals.findIndex(g => g.id === GoalApp.currentGoal.id);
-    if (goalIndex !== -1) {
-      GoalApp.goals[goalIndex].tasks = updatedTasks;
-    }
-    
-    renderTasks(updatedTasks);
-    updateProgress();
-    sortGoalsByType();
-    renderCards();
-    closeModal('taskModal');
-    
-    showMessage(GoalApp.editingTaskId ? 'Задача обновлена' : 'Задача создана', 'success');
-    GoalApp.editingTaskId = null;
-    updateStats();
-    
-  } catch (err) {
-    showMessage('Ошибка: ' + err.message, 'error');
-  }
-}
+} 
 
 function findTaskById(tasks, taskId) {
   for (const task of tasks) {
@@ -1014,79 +1111,87 @@ function addTaskAsSubtask(tasks, parentId, subtask) {
 }
 
 async function toggleTaskComplete(taskId, completed) {
-  if (!GoalApp.currentGoal) return;
-  
-  const task = findTaskById(GoalApp.currentGoal.tasks, taskId);
-  if (!task) return;
-  
-  const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-  const checkbox = taskElement?.querySelector('.task-checkbox');
-  
-  if (completed) {
-    let hasIncomplete = false;
-    if (task.subtasks && task.subtasks.length > 0) {
-      hasIncomplete = task.subtasks.some(st => !st.completed);
-    }
-    
-    if (hasIncomplete) {
-      if (taskElement) {
-        const existingWarning = taskElement.querySelector('.task-warning');
-        if (existingWarning) existingWarning.remove();
-        
-        const warning = document.createElement('div');
-        warning.className = 'task-warning';
-        warning.textContent = '⚠️ Сначала завершите все подзадачи';
-        
-        const taskHeader = taskElement.querySelector('.task-header');
-        if (taskHeader) {
-          taskHeader.parentNode.insertBefore(warning, taskHeader.nextSibling);
-        } else {
-          taskElement.insertBefore(warning, taskElement.firstChild);
-        }
-        
-        setTimeout(() => {
-          if (warning.parentNode) warning.remove();
-        }, 3000);
-      }
-      
-      if (checkbox) checkbox.checked = false;
-      showMessage('Сначала завершите все подзадачи!', 'error');
-      return;
-    }
-    
-    if (task.subtasks) {
-      completeAllSubtasks(task.subtasks);
-    }
-  } else {
-    if (task.completed) {
-      task.completed = false;
-    }
-    
-    const parentTask = findParentTask(GoalApp.currentGoal.tasks, taskId);
-    if (parentTask && parentTask.completed) {
-      parentTask.completed = false;
-    }
-  }
-  
-  task.completed = completed;
-  
-  try {
-    await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
-      tasks: GoalApp.currentGoal.tasks,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    document.querySelectorAll('.task-actions').forEach(actions => {
+        actions.style.opacity = '0';
     });
     
-    renderTasks(GoalApp.currentGoal.tasks);
-    updateProgress();
-    sortGoalsByType();
-    renderCards();
-    updateStats();
+    if (!GoalApp.currentGoal) return;
     
-  } catch (err) {
-    if (checkbox) checkbox.checked = !completed;
-    task.completed = !completed;
-    showMessage('Ошибка обновления', 'error');
-  }
+    const task = findTaskById(GoalApp.currentGoal.tasks, taskId);
+    if (!task) return;
+    
+    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+    const checkbox = taskElement?.querySelector('.task-checkbox');
+    
+    if (completed) {
+        let hasIncomplete = false;
+        if (task.subtasks && task.subtasks.length > 0) {
+            hasIncomplete = task.subtasks.some(st => !st.completed);
+        }
+        
+        if (hasIncomplete) {
+            if (taskElement) {
+                const existingWarning = taskElement.querySelector('.task-warning');
+                if (existingWarning) existingWarning.remove();
+                
+                const warning = document.createElement('div');
+                warning.className = 'task-warning';
+                warning.textContent = '⚠️ Сначала завершите все подзадачи';
+                
+                const taskHeader = taskElement.querySelector('.task-header');
+                if (taskHeader) {
+                    taskHeader.parentNode.insertBefore(warning, taskHeader.nextSibling);
+                } else {
+                    taskElement.insertBefore(warning, taskElement.firstChild);
+                }
+                
+                setTimeout(() => {
+                    if (warning.parentNode) warning.remove();
+                }, 3000);
+            }
+            
+            if (checkbox) checkbox.checked = false;
+            showMessage('Сначала завершите все подзадачи!', 'error');
+            return;
+        }
+        
+        if (task.subtasks) {
+            completeAllSubtasks(task.subtasks);
+        }
+    } else {
+        if (task.completed) {
+            task.completed = false;
+        }
+        
+        const parentTask = findParentTask(GoalApp.currentGoal.tasks, taskId);
+        if (parentTask && parentTask.completed) {
+            parentTask.completed = false;
+        }
+    }
+    
+    task.completed = completed;
+    
+    try {
+        await GoalApp.db.collection('goals').doc(GoalApp.currentGoal.id).update({
+            tasks: GoalApp.currentGoal.tasks,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        renderTasks(GoalApp.currentGoal.tasks);
+        updateProgress();
+        sortGoalsByType();
+        renderCards();
+        updateStats();
+        
+        if (GoalApp.user?.isAnonymous) {
+            saveGoalsLocally(GoalApp.goals);
+        }
+        
+    } catch (err) {
+        if (checkbox) checkbox.checked = !completed;
+        task.completed = !completed;
+        showMessage('Ошибка обновления', 'error');
+    }
 }
 
 function findParentTask(tasks, childTaskId, parent = null) {
